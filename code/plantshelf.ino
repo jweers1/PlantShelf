@@ -34,6 +34,12 @@ int moisture3=0;
 int moisture4=0;
 int light1State=HIGH;
 int light2State=HIGH;
+double temperature;
+String LowerLight="";
+String UpperLight="";
+
+
+
 
 /* This function is called once at start up ----------------------------------*/
 /*******************************************************************************
@@ -73,6 +79,21 @@ void setup()
     light1State=HIGH;
     light2State=HIGH;
     
+    readMoisture();
+    
+    Particle.variable("Moisture 1",moisture1);
+    Particle.variable("Moisture 2",moisture2);
+    Particle.variable("Moisture 3",moisture3);
+    Particle.variable("Moisture 4",moisture4);
+    Particle.variable("Temperature",temperature);
+    Particle.variable("LowerLight",LowerLight);
+    Particle.variable("UpperLight",UpperLight);
+    
+    Particle.function("ReadMoisture",readMoist);
+    Particle.function("ReadTemp",readTemperature);
+    Particle.function("LightsOn",lightsOn);
+    Particle.function("LightsOff",lightsOff);
+    
 	//Serial.begin(9600);
 	Serial.println("done with init...");
 }
@@ -94,7 +115,7 @@ void sendToProwl()
    if (myTCP.connect("api.prowlapp.com", 80))
    {
         //Serial.println(F("Outgoing Notification"));
-        myTCP.println("POST /publicapi/add?apikey=8a89ee8b8ad79c9f938a5e119a7a7f4ab1388d1a&application=ParticleDoorbell&event=Doorbell%20Pressed&priority=1&description=Doorbell%20Pressed&url=google.com HTTP/1.1\r\nHost: api.prowlapp.com:80\r\n");
+        myTCP.println("POST /publicapi/add?apikey=8a89ee8b8ad79c9f938a5e119a7a7f4ab1388d1a&application=PlantShelf&event=WaterAlert&priority=1&description=You%20Should%20Water%20Your%20Plants&url=google.com HTTP/1.1\r\nHost: api.prowlapp.com:80\r\n");
         //delay(1000);
         myTCP.stop();
         Particle.publish("Prowl","Sending Prowl Notification");
@@ -114,11 +135,12 @@ void sendToProwl()
 void displayTemperature(){
     float temp;
      temp=ReadTemp();
+     temperature=temp;
         // Do something cool with the temperature
         //Serial.printf("Temperature %.2f C %.2f F ", sensor.celsius(), sensor.fahrenheit());
        // String df;
        // df=sprintf("%.2f",tempsensor.fahrenheit());
-        Particle.publish("plant shelf","display temperature");
+        
         lcd->clear();
         lcd->setCursor(0,0);
         lcd->print("Temperature");
@@ -150,10 +172,18 @@ void displayMoisture(String tag, int value)
 }
 
 
+
+// internet function to read the moisture sensors.
+int readMoist(String fred){
+    readMoisture();
+    return 0;
+}
+
 // read from the moisture sensors...
 // don't display... just read and store
 // moisture doesn't change all the much, so only a periodic read is necessary.
 void readMoisture(){
+    Particle.publish("plant shelf","read Moisture..");
     lcd->clear();
     lcd->print("Read Moisture");
     // first turn them on
@@ -192,7 +222,7 @@ void loop()
   }
   
   if (iDelay == 2){
-      Particle.publish("plant shelf","display routine..");
+      
       if(ScreenNumber == 0) {
           //readMoisture();
           displayTime();
@@ -230,6 +260,15 @@ unsigned int readBytes(int count)
     return val;
 }
 
+
+// internet function for reading the temperature
+int readTemperature(String fred){
+    float temp;
+    Particle.publish("plant shelf","internet read temperature");
+    temp=ReadTemp();
+    temperature=temp;
+    return (int)temp;
+}
 
 float ReadTemp(void) {
   byte temp_read = 0;
@@ -309,20 +348,62 @@ int processState(){
    //     changeLight(D2,HIGH);
    //     changeLight(D3,HIGH);
    // }
+   return 0;
+}
+
+// internet function for lights.
+int lightsOn(String fred){
+    changeLight(D2,LOW);
+    changeLight(D3,LOW);
+    return 0;    
+}
+
+int lightsOff(String fred){
+    changeLight(D2,HIGH);
+    changeLight(D3,HIGH);
+    return 0;
 }
 
 void changeLight(int light,int state){
     
     if (state == LOW){
         // turn it off
-        if(light1State!=state){
-           digitalWrite(light,LOW);
-        }
+        
+           if (light==D2){
+               if(light1State!=state){
+                    Particle.publish("plant shelf","Turn lights on..");
+                    digitalWrite(light,LOW);
+               }
+               light1State=state;
+               LowerLight="ON";
+           } else {
+               if(light2State!=state){
+                    Particle.publish("plant shelf","Turn lights on..");
+                    digitalWrite(light,LOW);
+               }
+               light2State=state;
+               UpperLight="ON";
+           }
+        
     } else if (state == HIGH){
         // turn it on
-        if (light1State!=state){
-          digitalWrite(light,HIGH);
-        }
+       
+          if (light==D2){
+               if (light1State!=state){
+                  Particle.publish("plant shelf","Turn lights off..");
+                  digitalWrite(light,HIGH);
+               }
+              light1State=state;
+              LowerLight="OFF";
+          } else {
+              if (light2State!=state){
+                  Particle.publish("plant shelf","Turn lights off..");
+                  digitalWrite(light,HIGH);
+               }
+              light2State=state;
+              UpperLight="OFF";
+          }
+        
     }
 }
 
