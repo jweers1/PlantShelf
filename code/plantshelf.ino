@@ -371,14 +371,14 @@ void changeLight(int light,int state){
         
            if (light==D2){
                if(light1State!=state){
-                    Particle.publish("plant shelf","Turn lights on..");
+                    Particle.publish("plant shelf","Turn Lower light on..");
                     digitalWrite(light,LOW);
                }
                light1State=state;
                LowerLight="ON";
            } else {
                if(light2State!=state){
-                    Particle.publish("plant shelf","Turn lights on..");
+                    Particle.publish("plant shelf","Turn Upper light on..");
                     digitalWrite(light,LOW);
                }
                light2State=state;
@@ -390,14 +390,14 @@ void changeLight(int light,int state){
        
           if (light==D2){
                if (light1State!=state){
-                  Particle.publish("plant shelf","Turn lights off..");
+                  Particle.publish("plant shelf","Turn Lower light off..");
                   digitalWrite(light,HIGH);
                }
               light1State=state;
               LowerLight="OFF";
           } else {
               if (light2State!=state){
-                  Particle.publish("plant shelf","Turn lights off..");
+                  Particle.publish("plant shelf","Turn Upper Light off..");
                   digitalWrite(light,HIGH);
                }
               light2State=state;

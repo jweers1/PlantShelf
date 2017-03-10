@@ -81,10 +81,10 @@ void setup()
     
     readMoisture();
     
-    Particle.variable("Moisture 1",moisture1);
-    Particle.variable("Moisture 2",moisture2);
-    Particle.variable("Moisture 3",moisture3);
-    Particle.variable("Moisture 4",moisture4);
+    Particle.variable("Moisture1",moisture1);
+    Particle.variable("Moisture2",moisture2);
+    Particle.variable("Moisture3",moisture3);
+    Particle.variable("Moisture4",moisture4);
     Particle.variable("Temperature",temperature);
     Particle.variable("LowerLight",LowerLight);
     Particle.variable("UpperLight",UpperLight);
